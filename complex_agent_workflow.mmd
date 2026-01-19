@@ -1,0 +1,77 @@
+graph TD
+    %% Styling
+    classDef mainNode fill:#0f172a,stroke:#3b82f6,stroke-width:2px,color:#fff,rx:5,ry:5,shadow:10px
+    classDef agent fill:#1e293b,stroke:#64748b,stroke-width:1px,color:#e2e8f0,rx:5,ry:5
+    classDef tool fill:#047857,stroke:#10b981,stroke-width:1px,color:#fff,stroke-dasharray: 5 5,rx:10,ry:10
+    classDef decision fill:#7c2d12,stroke:#f97316,stroke-width:2px,color:#fff,rhombus
+    classDef storage fill:#4338ca,stroke:#6366f1,stroke-width:2px,color:#fff,cyl
+
+    %% Start
+    Start([🚀 User Request]):::mainNode --> Router{⚡ Triage?}:::decision
+
+    %% Router Logic
+    Router -- "Research" --> ResearchQueue[📥 Research Queue]:::agent
+    Router -- "Development" --> DevQueue[📥 Dev Queue]:::agent
+    Router -- "Analysis" --> DataQueue[📥 Data Queue]:::agent
+
+    %% Research Subsystem
+    subgraph Research_Squad [🔍 Autonomous Research Squad]
+        direction TB
+        ResearchQueue --> LeadResearcher[👨‍🔬 Lead Researcher]:::agent
+        LeadResearcher --> Planner[📝 Plan Generator]:::agent
+        Planner --> ParallelExec{⚙️ Parallel Execution}:::decision
+        
+        ParallelExec --> WebScraper[🕸️ Web Scraper]:::tool
+        ParallelExec --> PaperSearch[📄 ArXiv/Paper Search]:::tool
+        ParallelExec --> CompetitorAnalyst[📊 Market Analysis]:::tool
+        
+        WebScraper --> RawData[(🗄️ Raw Data Lake)]:::storage
+        PaperSearch --> RawData
+        CompetitorAnalyst --> RawData
+        
+        RawData --> Synthesizer[🧠 Insight Synthesizer]:::agent
+        Synthesizer --> DraftReport[📄 Draft Report]:::agent
+        DraftReport --> FactCheck[✅ Fact Checker]:::agent
+        FactCheck -- "Errors Found" --> Planner
+    end
+
+    %% Development Subsystem
+    subgraph Dev_Squad [💻 Engineering Division]
+        direction TB
+        DevQueue --> Architect[🏗️ System Architect]:::agent
+        Architect --> SpecDoc[📝 Technical Spec]:::agent
+        SpecDoc --> CodeGenerator[🤖 Code Generator]:::agent
+        
+        CodeGenerator -- "Uses" --> DocsTool[📚 Documentation RAG]:::tool
+        CodeGenerator --> CodeReviewer[🧐 Code Reviewer]:::agent
+        
+        CodeReviewer -- "Needs Improvement" --> CodeGenerator
+        CodeReviewer -- "Approved" --> TestSuite[🧪 Automated Testing]:::tool
+        
+        TestSuite -- "Failed" --> Debugger[🐞 Auto-Debugger]:::agent
+        Debugger --> CodeGenerator
+    end
+    
+    %% Deployment Subsystem
+    subgraph Ops_Squad [🚀 DevOps & Deployment]
+        TestSuite -- "Passed" --> SecScan[🛡️ Security Scanner]:::tool
+        SecScan --> CI_CD[🔄 CI/CD Pipeline]:::agent
+        CI_CD --> Staging[🌐 Staging Environment]:::agent
+        Staging --> UserAcceptance{👍 User Approval?}:::decision
+        UserAcceptance -- "No" --> Architect
+    end
+
+    %% Final Output
+    FactCheck -- "Verified" --> Deliverable([📦 Final Deliverable]):::mainNode
+    UserAcceptance -- "Yes" --> ProdDeploy[🚀 Production Deploy]:::mainNode
+    ProdDeploy --> Deliverable
+
+    %% Memory & Context
+    GlobalMem[(🧠 Global Context Memory)]:::storage
+    LeadResearcher -.-> GlobalMem
+    Architect -.-> GlobalMem
+    CodeGenerator -.-> GlobalMem
+    Synthesizer -.-> GlobalMem
+
+    %% Links between squads
+    Synthesizer -. "Feeds Requirements" .-> Architect
