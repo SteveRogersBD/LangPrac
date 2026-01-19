@@ -1,0 +1,5 @@
+Langsmith/.env
+LangGraph/.env
+.env
+**/.env
+*.env
